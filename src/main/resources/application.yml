@@ -11,6 +11,6 @@ spring:
      timeout: 5000  # 连接超时时间（毫秒）
 # 自定义
 info:
-   redis: sn.server.net
+   redis: localhost
    redisport: 6379
    redispassword: sn123456

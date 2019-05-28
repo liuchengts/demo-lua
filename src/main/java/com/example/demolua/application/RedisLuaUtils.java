@@ -1,4 +1,4 @@
-package com.example.demolua;
+package com.example.demolua.application;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
@@ -18,14 +18,15 @@ import java.util.*;
 @Component
 public class RedisLuaUtils {
 
-//    static volatile Map<String, String> map = new HashMap<>();
+    static volatile Map<String, String> map = new HashMap<>();
 
     @Autowired
-    RedisTemplate redisTemplate;
+    public RedisTemplate redisTemplate;
     String load_has = "";
     String clean = "lua/clean.lua";
     String load = "lua/load.lua";
     String script1 = "lua/script1.lua";
+    String onlyCheck = "lua/onlyCheck.lua";
 
     @PostConstruct
     private void init() {
@@ -35,22 +36,39 @@ public class RedisLuaUtils {
         redisTemplate.setHashValueSerializer(new Jackson2JsonRedisSerializer<>(Object.class));
     }
 
-    @Bean
-    @Scope
-    public RedisScript clean() {
-        DefaultRedisScript redisScript = new DefaultRedisScript<>();
-        redisScript.setScriptSource(new ResourceScriptSource(new ClassPathResource(clean)));
-        return redisScript;
+//    public String load() {
+//        String has = (String) execute(loadScript(), "",load);
+//        map.put(load, has);
+//        redisTemplate.
+//        return has;
+//    }
+
+    public String clean() {
+        DefaultRedisScript<String> redisScript = new DefaultRedisScript<>();
+        redisScript.setScriptText("SCRIPT FLUSH");
+//        SCRIPT LOAD "return redis.call('SET',KEYS[1],ARGV[1])"
+        String has = (String) execute(redisScript, "");
+        map.put(load, has);
+        return has;
     }
 
-    @Bean
-    @Scope
-    public RedisScript<String> load() {
-        DefaultRedisScript<String> redisScript = new DefaultRedisScript<>();
-        redisScript.setScriptSource(new ResourceScriptSource(new ClassPathResource(load)));
-        redisScript.setResultType(String.class);
-        return redisScript;
-    }
+//    @Bean
+//    @Scope
+//    public RedisScript<String> cleanScript() {
+//        DefaultRedisScript<String> redisScript = new DefaultRedisScript<>();
+//        redisScript.setScriptSource(new ResourceScriptSource(new ClassPathResource(clean)));
+//        redisScript.setResultType(String.class);
+//        return redisScript;
+//    }
+//
+//    @Bean
+//    @Scope
+//    public RedisScript<String> loadScript() {
+//        DefaultRedisScript<String> redisScript = new DefaultRedisScript<>();
+//        redisScript.setScriptSource(new ResourceScriptSource(new ClassPathResource(load)));
+//        redisScript.setResultType(String.class);
+//        return redisScript;
+//    }
 
     @Bean
     @Scope
@@ -58,6 +76,15 @@ public class RedisLuaUtils {
         DefaultRedisScript<List> redisScript = new DefaultRedisScript<>();
         redisScript.setScriptSource(new ResourceScriptSource(new ClassPathResource(script1)));
         redisScript.setResultType(List.class);
+        return redisScript;
+    }
+
+    @Bean
+    @Scope
+    public RedisScript<Set> onlyCheck() {
+        DefaultRedisScript<Set> redisScript = new DefaultRedisScript<>();
+        redisScript.setScriptSource(new ResourceScriptSource(new ClassPathResource(onlyCheck)));
+        redisScript.setResultType(Set.class);
         return redisScript;
     }
 
